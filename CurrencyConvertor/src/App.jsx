@@ -1,121 +1,133 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react"
+const exchangeRates = {
+  USD: 1,
+  INR: 83.25,
+  EUR: 0.92,
+  GBP: 0.79,
+  JPY: 157.4,
+  AUD: 1.51,
+  CAD: 1.37,
+  CHF: 0.89,
+  SGD: 1.34,
+  AED: 3.67,
+}
+
+const currencies = Object.keys(exchangeRates)
+
+function formatAmount(amount, currency) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: amount >= 1000 ? 0 : 2,
+  }).format(amount)
+}
+
+function convertCurrency(amount, fromCurrency, toCurrency) {
+  if (fromCurrency === toCurrency) {
+    return amount
+  }
+
+  return (amount / exchangeRates[fromCurrency]) * exchangeRates[toCurrency]
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [amount, setAmount] = useState(120)
+  const [fromCurrency, setFromCurrency] = useState("USD")
+  const [toCurrency, setToCurrency] = useState("INR")
+
+  const convertedAmount = convertCurrency(amount, fromCurrency, toCurrency)
+  const rate = convertCurrency(1, fromCurrency, toCurrency)
+
+  function swapCurrencies() {
+    setFromCurrency(toCurrency)
+    setToCurrency(fromCurrency)
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
+    <main className="app-shell">
+      <section className="hero-card">
+        <div className="hero-copy">
+          <span className="eyebrow">Currency convertor</span>
+          <h1>Swap between currencies with a fast, local rate table.</h1>
           <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+            The converter keeps the same hook-based structure as CampusHub and
+            works offline with a clear base-currency calculation.
           </p>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
+        <div className="rate-card">
+          <span className="rate-label">Live example rate</span>
+          <strong>{formatAmount(rate, toCurrency)} per 1 {fromCurrency}</strong>
+          <p>
+            Built from a static reference table so the app remains reliable even
+            without an API key.
+          </p>
         </div>
       </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <section className="panel converter-grid">
+        <label className="converter-field amount-field">
+          Amount
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={amount}
+            onChange={(event) => setAmount(Number(event.target.value))}
+          />
+        </label>
+
+        <div className="currency-grid">
+          <label className="converter-field">
+            From
+            <select
+              value={fromCurrency}
+              onChange={(event) => setFromCurrency(event.target.value)}
+            >
+              {currencies.map((currency) => (
+                <option key={currency} value={currency}>
+                  {currency}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <button type="button" className="swap-button" onClick={swapCurrencies}>
+            Swap
+          </button>
+
+          <label className="converter-field">
+            To
+            <select
+              value={toCurrency}
+              onChange={(event) => setToCurrency(event.target.value)}
+            >
+              {currencies.map((currency) => (
+                <option key={currency} value={currency}>
+                  {currency}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="result-card">
+          <span className="rate-label">Converted amount</span>
+          <strong>{formatAmount(convertedAmount, toCurrency)}</strong>
+          <p>
+            {formatAmount(amount, fromCurrency)} equals {formatAmount(convertedAmount, toCurrency)}
+          </p>
+        </div>
+
+        <div className="currency-strip">
+          {currencies.slice(0, 6).map((currency) => (
+            <span key={currency} className="currency-chip">
+              {currency}
+            </span>
+          ))}
+        </div>
+      </section>
+    </main>
   )
 }
 
